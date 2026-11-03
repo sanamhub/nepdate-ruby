@@ -1,0 +1,95 @@
+PATH
+  remote: packages/nepdate-patro
+  specs:
+    nepdate-patro (1.0.0.pre.rc.1)
+      nepdate (= 1.0.0.pre.rc.1)
+
+PATH
+  remote: packages/nepdate
+  specs:
+    nepdate (1.0.0.pre.rc.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ast (2.4.3)
+    benchmark-ips (2.15.1)
+    json (2.9.1)
+    language_server-protocol (3.17.0.6)
+    lint_roller (1.1.0)
+    logger (1.7.0)
+    minitest (5.25.4)
+    parallel (1.28.0)
+    parser (3.3.13.0)
+      ast (~> 2.4.1)
+      racc
+    prism (1.9.0)
+    racc (1.8.1)
+    rainbow (3.1.1)
+    rake (13.4.2)
+    rbs (4.2.0)
+      logger
+      prism (>= 1.6.0)
+      tsort
+    regexp_parser (2.13.1)
+    rubocop (1.75.8)
+      json (~> 2.3)
+      language_server-protocol (~> 3.17.0.2)
+      lint_roller (~> 1.1.0)
+      parallel (~> 1.10)
+      parser (>= 3.3.0.2)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 2.9.3, < 3.0)
+      rubocop-ast (>= 1.44.0, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 2.4.0, < 4.0)
+    rubocop-ast (1.46.0)
+      parser (>= 3.3.7.2)
+      prism (~> 1.4)
+    rubocop-performance (1.26.0)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.75.0, < 2.0)
+      rubocop-ast (>= 1.44.0, < 2.0)
+    ruby-progressbar (1.13.0)
+    simplecov (1.3.2)
+    standard (1.50.0)
+      language_server-protocol (~> 3.17.0.2)
+      lint_roller (~> 1.0)
+      rubocop (~> 1.75.5)
+      standard-custom (~> 1.0.0)
+      standard-performance (~> 1.8)
+    standard-custom (1.0.2)
+      lint_roller (~> 1.0)
+      rubocop (~> 1.50)
+    standard-performance (1.9.0)
+      lint_roller (~> 1.1)
+      rubocop-performance (~> 1.26.0)
+    tsort (0.2.0)
+    unicode-display_width (3.3.0)
+      unicode-emoji (~> 4.3)
+    unicode-emoji (4.3.0)
+    yard (0.9.45)
+
+PLATFORMS
+  aarch64-linux
+  arm64-darwin
+  ruby
+  x64-mingw-ucrt
+  x86_64-darwin
+  x86_64-linux
+
+DEPENDENCIES
+  benchmark-ips (= 2.15.1)
+  json (= 2.9.1)
+  minitest (= 5.25.4)
+  nepdate!
+  nepdate-patro!
+  rake (= 13.4.2)
+  rbs (= 4.2.0)
+  rubocop-ast (= 1.46.0)
+  simplecov (= 1.3.2)
+  standard (= 1.50.0)
+  yard (= 0.9.45)
+
+BUNDLED WITH
+   2.6.9

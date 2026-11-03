@@ -1,0 +1,10 @@
+# Standard's own rules, with generated tables excluded because scripts/generate_*.rb --check
+# owns their bytes. The repository stores LF (see .gitattributes), so the native end-of-line
+# cop would demand CRLF on Windows and LF on Linux; the EOL cop is skipped for that one reason
+# and .gitattributes enforces the actual convention.
+ruby_version: 3.4
+ignore:
+  - packages/nepdate/lib/nepdate/calendar_table.rb
+  - packages/nepdate-patro/lib/nepdate/patro/table.rb
+  - "**/*":
+      - Layout/EndOfLine

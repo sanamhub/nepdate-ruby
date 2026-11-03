@@ -1,0 +1,12 @@
+/.bundle/
+/.yardoc/
+/coverage/
+/dist/
+/doc/
+/tmp/
+/vendor/
+/bench/pinned.log
+/AGENTS.md
+/CLAUDE.md
+.DS_Store
+*.gem

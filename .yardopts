@@ -1,0 +1,5 @@
+--no-private
+--no-output
+--markup markdown
+packages/nepdate/lib/**/*.rb
+packages/nepdate-patro/lib/**/*.rb

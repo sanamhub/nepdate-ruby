@@ -1,0 +1,58 @@
+module NepDate
+  module Patro
+    VERSION: String
+
+    module Lookup
+      def self.index_of: (Array[Integer], Integer) -> Integer?
+      def self.include?: (Array[Integer], Integer) -> bool
+    end
+
+    class Named
+      attr_reader nepali: String
+      attr_reader english: String
+
+      def initialize: (String, String) -> void
+      def name: (?lang: Symbol | String) -> String
+      def to_h: () -> Hash[Symbol, String]
+      def ==: (untyped) -> bool
+      def eql?: (untyped) -> bool
+      def hash: () -> Integer
+      def to_s: () -> String
+      def inspect: () -> String
+    end
+
+    class Tithi < Named
+    end
+
+    class Event < Named
+    end
+
+    class CalendarInfo
+      attr_reader tithi: Tithi?
+      attr_reader events: Array[Event]
+
+      def initialize: (?tithi: Tithi?, ?public_holiday: bool, ?events: Array[Event]) -> void
+      def public_holiday?: () -> bool
+      def is_public_holiday: () -> bool
+      def holiday?: () -> bool
+      def tithi_np: () -> String
+      def tithi_en: () -> String
+      def events_np: () -> Array[String]
+      def events_en: () -> Array[String]
+      def to_h: () -> Hash[Symbol, untyped]
+      def ==: (untyped) -> bool
+      def eql?: (untyped) -> bool
+      def hash: () -> Integer
+      def inspect: () -> String
+    end
+
+    def self.info: (NepDate::Date) -> CalendarInfo
+    def self.of: (NepDate::Date) -> CalendarInfo
+    def self.coverage: () -> NepDate::DateRange
+    def self.public_holidays: () -> Array[NepDate::Date]
+  end
+
+  class Date
+    def calendar_info: () -> NepDate::Patro::CalendarInfo
+  end
+end

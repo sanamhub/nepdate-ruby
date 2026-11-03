@@ -1,0 +1,435 @@
+module NepDate
+  VERSION: String
+
+  module ErrorKind
+    OUT_OF_RANGE: Symbol
+    INVALID_MONTH: Symbol
+    INVALID_DAY: Symbol
+    INVALID_GREGORIAN: Symbol
+    INVALID_CHARACTER: Symbol
+    WRONG_GROUP_COUNT: Symbol
+    NUMBER_TOO_LONG: Symbol
+    AMBIGUOUS: Symbol
+    UNRECOGNIZED: Symbol
+    ALL: Array[Symbol]
+
+    def self.name_for: (Symbol) -> String
+  end
+
+  class Error < StandardError
+    attr_reader kind: Symbol
+
+    def initialize: (Symbol, String) -> void
+    def kind_name: () -> String
+  end
+
+  class OutOfRangeError < Error
+    def initialize: (String) -> void
+  end
+
+  class InvalidMonthError < Error
+    def initialize: (String) -> void
+  end
+
+  class InvalidDayError < Error
+    def initialize: (String) -> void
+  end
+
+  class InvalidGregorianError < Error
+    def initialize: (String) -> void
+  end
+
+  class ParseError < Error
+    def initialize: (Symbol, String) -> void
+  end
+
+  module Lang
+    EN: Symbol
+    NE: Symbol
+
+    def self.coerce: (Symbol | String) -> Symbol
+  end
+
+  module MonthOverflow
+    CLAMP: Symbol
+    SPILL: Symbol
+    ALL: Array[Symbol]
+
+    def self.coerce: (Symbol | String) -> Symbol
+  end
+
+  module DateOrder
+    ORDER: Hash[Symbol, Array[Symbol]]
+    ALL: Array[Symbol]
+
+    def self.coerce: (Symbol | String) -> Symbol
+    def self.fields: (Symbol | String) -> Array[Symbol]
+  end
+
+  module Separator
+    CHARACTERS: Hash[Symbol, String]
+    ALL: Array[Symbol]
+    BY_CHARACTER: Hash[String, Symbol]
+
+    def self.coerce: (Symbol | String) -> Symbol
+    def self.character: (Symbol | String) -> String
+    def self.name_for: (String) -> Symbol
+  end
+
+  module Names
+    MONTH_EN: Array[String]
+    MONTH_NE: Array[String]
+    MONTH_SHORT_EN: Array[String]
+    WEEKDAY_EN: Array[String]
+    WEEKDAY_NE: Array[String]
+    WEEKDAY_SHORT_EN: Array[String]
+    WEEKDAY_SHORT_NE: Array[String]
+    DEVANAGARI_DIGITS: Array[String]
+    ASCII_DIGITS: Array[String]
+
+    def self.month_name: (Integer, Symbol) -> String
+    def self.month_short: (Integer, Symbol) -> String
+    def self.weekday_name: (Integer, Symbol) -> String
+    def self.weekday_short: (Integer, Symbol) -> String
+    def self.nepali_digits: (String) -> String
+    def self.digits: (Integer, Symbol, ?width: Integer) -> String
+  end
+
+  class Month
+    include Comparable
+
+    NAMES_EN: Array[String]
+    NAMES_NE: Array[String]
+    SHORT_EN: Array[String]
+    BAISHAKH: Month
+    JESTHA: Month
+    ASHAD: Month
+    SHRAWAN: Month
+    BHADRA: Month
+    ASHOJ: Month
+    KARTIK: Month
+    MANGSIR: Month
+    POUSH: Month
+    MAGH: Month
+    FALGUN: Month
+    CHAITRA: Month
+    ALL: Array[Month]
+
+    attr_reader number: Integer
+
+    def initialize: (Integer) -> void
+    def self.from: (Month | Integer) -> Month
+    def label: (?lang: Symbol | String) -> String
+    def short_label: (?lang: Symbol | String) -> String
+    def to_i: () -> Integer
+    def to_s: () -> String
+    def <=>: (untyped) -> Integer?
+    def ==: (untyped) -> bool
+    def eql?: (untyped) -> bool
+    def hash: () -> Integer
+    def inspect: () -> String
+  end
+
+  class Weekday
+    include Comparable
+
+    SUNDAY: Weekday
+    MONDAY: Weekday
+    TUESDAY: Weekday
+    WEDNESDAY: Weekday
+    THURSDAY: Weekday
+    FRIDAY: Weekday
+    SATURDAY: Weekday
+    ALL: Array[Weekday]
+
+    attr_reader number: Integer
+
+    def initialize: (Integer) -> void
+    def self.from: (Weekday | Integer) -> Weekday
+    def label: (?lang: Symbol | String) -> String
+    def short_label: (?lang: Symbol | String) -> String
+    def sunday?: () -> bool
+    def monday?: () -> bool
+    def tuesday?: () -> bool
+    def wednesday?: () -> bool
+    def thursday?: () -> bool
+    def friday?: () -> bool
+    def saturday?: () -> bool
+    def to_i: () -> Integer
+    def to_s: () -> String
+    def <=>: (untyped) -> Integer?
+    def ==: (untyped) -> bool
+    def eql?: (untyped) -> bool
+    def hash: () -> Integer
+    def inspect: () -> String
+  end
+
+  class Quarter
+    include Comparable
+
+    NAMES: Hash[Integer, Symbol]
+    LABELS: Hash[Integer, String]
+    Q1: Quarter
+    Q2: Quarter
+    Q3: Quarter
+    Q4: Quarter
+    ALL: Array[Quarter]
+
+    attr_reader number: Integer
+
+    def initialize: (Integer) -> void
+    def self.from: (Quarter | Integer | Symbol | String) -> Quarter
+    def name: () -> Symbol
+    def label: () -> String
+    def to_i: () -> Integer
+    def to_s: () -> String
+    def <=>: (untyped) -> Integer?
+    def ==: (untyped) -> bool
+    def eql?: (untyped) -> bool
+    def hash: () -> Integer
+    def inspect: () -> String
+  end
+
+  class DateDiff
+    attr_reader years: Integer
+    attr_reader months: Integer
+    attr_reader days: Integer
+    attr_reader total_days: Integer
+
+    def initialize: (negative: bool, years: Integer, months: Integer, days: Integer, total_days: Integer) -> void
+    def negative?: () -> bool
+    def sign: () -> Integer
+    def to_h: () -> Hash[Symbol, Integer | bool]
+    def ==: (untyped) -> bool
+    def eql?: (untyped) -> bool
+    def hash: () -> Integer
+    def inspect: () -> String
+  end
+
+  class Date
+    include Comparable
+
+    DEFAULT_OFFSET: Integer
+    DEFAULT_ZONE: String
+    OFFSET_ALIASES: Hash[String, Integer]
+    MIN: Date
+    MAX: Date
+
+    attr_reader year: Integer
+    attr_reader month: Integer
+    attr_reader day: Integer
+    attr_reader serial: Integer
+
+    def initialize: (Integer, Integer, Integer) -> void
+
+    def self.from_bs: (Integer, Integer, Integer) -> Date
+    def self.from_ymd_parts: (Integer, Integer, Integer) -> Date
+    def self.from_gregorian: (Integer, Integer, Integer) -> Date
+    def self.from_date: (::Date) -> Date
+    def self.from_time: (::Time) -> Date
+    def self.min: () -> Date
+    def self.max: () -> Date
+    def self.today: (?zone: untyped, ?clock: untyped) -> Date
+    def self.parse: (String) -> Date
+    def self.try_parse: (String) -> Date?
+    def self.parse_lenient: (String) -> Date
+    def self.try_parse_lenient: (String) -> Date?
+    def self.from_ymd: (Integer) -> Date
+    def self.from_ymd_int: (Integer) -> Date
+    def self.from_json: (String) -> Date
+    def self.from_gregorian_batch: (Enumerable[untyped]) -> Array[Date]
+    def self.parse_batch: (Enumerable[String]) -> Array[::Date]
+    def self.to_gregorian_batch: (Enumerable[Date]) -> Array[::Date]
+    def self.min_gregorian: () -> ::Date
+    def self.max_gregorian: () -> ::Date
+    def self.offset_seconds: (untyped) -> Integer
+    def self.from_serial: (Integer) -> Date
+    def self.integer_argument: (untyped, String) -> Integer
+
+    def day_of_year: () -> Integer
+    def year_length: () -> Integer
+    def month_length: () -> Integer
+    def month_end_day: () -> Integer
+    def month_enum: () -> Month
+    def month_name: () -> Month
+    def weekday: () -> Weekday
+    def day_of_week: () -> Weekday
+    def last_day_of_month: () -> Date
+    def month_end_date: () -> Date
+    def to_date: () -> ::Date
+    def english_date: () -> ::Date
+    def to_datetime: (?zone: untyped) -> ::DateTime
+    def to_time: (?zone: untyped, ?hour: Integer, ?minute: Integer, ?second: Integer) -> ::Time
+    def today?: (?zone: untyped, ?clock: untyped) -> bool
+    def is_today: (?zone: untyped, ?clock: untyped) -> bool
+    def yesterday?: (?zone: untyped, ?clock: untyped) -> bool
+    def is_yesterday: (?zone: untyped, ?clock: untyped) -> bool
+    def tomorrow?: (?zone: untyped, ?clock: untyped) -> bool
+    def is_tomorrow: (?zone: untyped, ?clock: untyped) -> bool
+    def fiscal_year: () -> FiscalYear
+    def quarter: () -> Quarter
+    def add_days: (Integer) -> Date
+    def add_months: (Integer, ?overflow: Symbol | String) -> Date
+    def add_years: (Integer, ?overflow: Symbol | String) -> Date
+    def days_until: (Date) -> Integer
+    def diff: (Date) -> DateDiff
+    def calendar_breakdown: (Date) -> DateDiff
+    def succ: () -> Date
+    def +: (Integer) -> Date
+    def -: (Integer) -> Date
+         | (Date) -> Integer
+    def <=>: (untyped) -> Integer?
+    def compare_to: (Date) -> Integer?
+    def ==: (untyped) -> bool
+    def eql?: (untyped) -> bool
+    def hash: () -> Integer
+    def to_ymd: () -> Integer
+    def ymd: () -> Integer
+    def iso8601: () -> String
+    def isoformat: () -> String
+    def to_s: () -> String
+    def to_short_string: (?order: Symbol | String, ?separator: Symbol | String, ?pad: bool, ?lang: Symbol | String) -> String
+    def to_long_string: (?weekday: bool, ?year: bool, ?pad: bool, ?lang: Symbol | String) -> String
+    def to_unicode_string: (?order: Symbol | String, ?separator: Symbol | String, ?pad: bool) -> String
+    def to_long_unicode_string: (?weekday: bool, ?year: bool, ?pad: bool) -> String
+    def format: (String, ?lang: Symbol | String) -> String
+    def to_json: (*untyped) -> String
+    def to_h: () -> Hash[Symbol, Integer]
+    def to_a: () -> Array[Integer]
+    def to_ary: () -> Array[Integer]
+    def deconstruct: () -> Array[Integer]
+    def deconstruct_keys: (untyped) -> Hash[Symbol, Integer]
+    def inspect: () -> String
+  end
+
+  class DateRange
+    include Enumerable[Date]
+
+    attr_reader start: Date
+    attr_reader end: Date
+
+    def initialize: (Date, Date) -> void
+    def self.of: (Date, Date) -> DateRange
+    def self.single_day: (Date) -> DateRange
+    def self.from_day_count: (Date, Integer) -> DateRange
+    def self.for_month: (Integer, Integer) -> DateRange
+    def self.for_year: (Integer) -> DateRange
+    def self.current_month: (?zone: untyped, ?clock: untyped) -> DateRange
+    def self.current_fiscal_year: (?zone: untyped, ?clock: untyped) -> DateRange
+    def self.current_calendar_year: (?zone: untyped, ?clock: untyped) -> DateRange
+
+    def length: () -> Integer
+    def size: () -> Integer
+    def first: () -> Date
+             | (Integer) -> Array[Date]
+    def last: () -> Date
+            | (Integer) -> Array[Date]
+    def empty?: () -> bool
+    def include?: (Date) -> bool
+    def contains?: (Date) -> bool
+    def contains: (Date) -> bool
+    def contains_range?: (DateRange) -> bool
+    def contains_range: (DateRange) -> bool
+    def overlaps?: (DateRange) -> bool
+    def overlaps: (DateRange) -> bool
+    def adjacent_to?: (DateRange) -> bool
+    def is_adjacent_to: (DateRange) -> bool
+    def intersect: (DateRange) -> DateRange?
+    def union: (DateRange) -> DateRange
+    def except: (DateRange) -> Array[DateRange]
+    def split_by_month: () -> Array[DateRange]
+    def split_by_fiscal_quarter: () -> Array[DateRange]
+    def dates_with_interval: (?Integer) -> Array[Date]
+    def working_days: (?exclude_sunday: bool) -> Array[Date]
+    def weekend_days: (?include_sunday: bool) -> Array[Date]
+    def each: () { (Date) -> void } -> self
+            | () -> Enumerator[Date, self]
+    def ==: (untyped) -> bool
+    def eql?: (untyped) -> bool
+    def hash: () -> Integer
+    def to_s: () -> String
+    def to_short_string: (?order: Symbol | String, ?separator: Symbol | String, ?lang: Symbol | String) -> String
+    def to_h: () -> Hash[Symbol, Date]
+    def inspect: () -> String
+  end
+
+  class FiscalYear
+    include Comparable
+
+    attr_reader start_year: Integer
+
+    def initialize: (Integer) -> void
+    def self.from: (FiscalYear | Integer) -> FiscalYear
+    def self.containing: (Date) -> FiscalYear
+    def start: () -> Date
+    def end: () -> Date
+    def range: () -> DateRange
+    def quarter_range: (Quarter | Integer | Symbol | String) -> DateRange
+    def quarter_start: (Quarter | Integer | Symbol | String) -> Date
+    def quarter_end: (Quarter | Integer | Symbol | String) -> Date
+    def label: (?lang: Symbol | String) -> String
+    def succ: () -> FiscalYear
+    def <=>: (untyped) -> Integer?
+    def ==: (untyped) -> bool
+    def eql?: (untyped) -> bool
+    def hash: () -> Integer
+    def to_s: () -> String
+    def inspect: () -> String
+  end
+
+  module Calendar
+    GREGORIAN_MONTH_LENGTHS: Array[Integer]
+
+    def self.month_length: (Integer, Integer) -> Integer
+    def self.to_serial: (Integer, Integer, Integer) -> Integer
+    def self.from_serial: (Integer) -> [Integer, Integer, Integer]
+    def self.validate: (Integer, Integer, Integer) -> true
+    def self.days_from_civil: (Integer, Integer, Integer) -> Integer
+    def self.civil_from_days: (Integer) -> [Integer, Integer, Integer]
+    def self.gregorian_month_length: (Integer, Integer) -> Integer
+    def self.gregorian_leap_year?: (Integer) -> bool
+    def self.valid_gregorian?: (Integer, Integer, Integer) -> bool
+  end
+
+  module Parse
+    GROUP_COUNT: Integer
+    MAX_DIGITS: Integer
+    ASCII_SEPARATORS: Array[String]
+    DANDA: String
+
+    def self.strict: (String) -> [Integer, Integer, Integer]
+    def self.invalid_character: (String, Integer) -> bot
+  end
+
+  module Lenient
+    SEPARATORS: Array[String]
+    MAX_DIGITS: Integer
+    KELVIN: String
+    DEVA_DIGITS: Hash[String, String]
+    ERA_MARKERS: Array[String]
+    IGNORED_WORDS: Array[String]
+    MONTH_WORDS: Hash[String, Integer]
+
+    def self.parse: (String) -> [Integer, Integer, Integer]
+    def self.tokens: (String) -> [Array[Integer], Array[Integer], Array[Integer], bool]
+    def self.numeric?: (String) -> bool
+    def self.word_value: (String) -> Integer
+    def self.fold: (String) -> String
+    def self.month_form: (Integer, Array[Integer], Array[Integer]) -> [Integer, Integer, Integer]
+    def self.numeric_form: (Array[Integer], Array[Integer]) -> [Integer, Integer, Integer]
+  end
+
+  module Format
+    DEFAULT_PATTERNS: Array[String]
+
+    def self.default: (Integer, Integer, Integer, Symbol) -> String
+    def self.iso8601: (Integer, Integer, Integer, Symbol) -> String
+    def self.short: (Integer, Integer, Integer, order: Symbol | String, separator: Symbol | String, pad: bool, lang: Symbol | String) -> String
+    def self.long: (Integer, Integer, Integer, weekday_number: Integer?, include_year: bool, pad: bool, lang: Symbol | String) -> String
+    def self.pattern: (String, year: Integer, month: Integer, day: Integer, lang: Symbol | String) -> String
+    def self.run_end: (Array[String], Integer, String) -> Integer
+  end
+
+  def self.parse: (String) -> Date
+  def self.today: (?zone: untyped, ?clock: untyped) -> Date
+end

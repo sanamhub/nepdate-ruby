@@ -1,0 +1,131 @@
+# ADR-0007 and docs/runbooks/release.md. A v* tag push checks the version, runs CI and, after the
+# production approval, publishes both gems through RubyGems trusted publishing and creates the
+# GitHub Release. workflow_dispatch is the dry run: preflight and CI run against the chosen tag,
+# and nothing is published.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to validate in the dry run, for example v1.0.0-rc.1"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  preflight:
+    name: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      # Full history, so a tag can be checked against main.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        with:
+          ruby-version: "3.4"
+      - name: The tagged commit is on main
+        if: github.event_name == 'push'
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::tag $GITHUB_REF_NAME points at a commit that is not on main"
+            exit 1
+          fi
+      - name: Version, tag and changelog agree
+        id: check
+        env:
+          TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            ruby scripts/release_check.rb "$TAG"
+          else
+            # The dry run accepts the Unreleased heading until the bump pull request.
+            ruby scripts/release_check.rb --draft "$TAG"
+          fi
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+  ci:
+    name: ci
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - run: bundle exec rake ci
+
+  publish:
+    name: publish
+    needs: [preflight, ci]
+    # Only a tag push publishes; workflow_dispatch is the dry run.
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      VERSION: ${{ needs.preflight.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      # Builds both gems, checks their contents, installs them into a temporary GEM_HOME and loads
+      # them. The job installs everything it calls before this step.
+      - name: Build and check both gems
+        run: bundle exec ruby scripts/release_check.rb "$VERSION"
+      - name: Credentials for nepdate
+        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+      - name: Publish nepdate
+        run: gem push "dist/nepdate-$VERSION.gem"
+      - name: Credentials for nepdate-patro
+        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+      - name: Publish nepdate-patro
+        run: gem push "dist/nepdate-patro-$VERSION.gem"
+      - name: GitHub Release from the changelog section
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          ruby scripts/release_notes.rb "$VERSION" > "$RUNNER_TEMP/notes.md"
+          prerelease=()
+          case "$VERSION" in *-*) prerelease=(--prerelease) ;; esac
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "nepdate-ruby $VERSION" --notes-file "$RUNNER_TEMP/notes.md" "${prerelease[@]}"
+
+  verify-published:
+    name: verify-published
+    needs: [preflight, publish]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    # The called workflow's report job opens an issue when a scheduled check fails. A caller must
+    # grant every permission a called job requests, even though report never runs on a release.
+    permissions:
+      contents: read
+      issues: write
+    uses: ./.github/workflows/verify-published.yml
+    with:
+      version: ${{ needs.preflight.outputs.version }}

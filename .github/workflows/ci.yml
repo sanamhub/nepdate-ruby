@@ -1,0 +1,96 @@
+# Every gate of ADR-0004 on Linux, macOS and Windows, over Ruby 3.4, the current stable release
+# and head, plus the hub's shared-check and actionlint. A green run here is the gate a release runs.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # shared-sync starts CI this way on the PR it opens with GITHUB_TOKEN.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    # A workflow with bash run blocks and a Windows job must say so, or Windows uses pwsh.
+    shell: bash
+
+jobs:
+  ci:
+    name: ci (${{ matrix.os }}, Ruby ${{ matrix.ruby }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        ruby: ["3.4", "4.0", "head"]
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.ruby == 'head' }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - run: bundle exec rake ci
+
+  # Reads the version from the same script the release uses, so shared-check gets it from the
+  # repository and not from a second copy.
+  version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        with:
+          ruby-version: "3.4"
+      - name: Read the manifest version
+        id: version
+        run: |
+          set -euo pipefail
+          if ! version="$(ruby scripts/release_check.rb --print)"; then
+            echo "$version" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  # Fails when shared/ differs from the hub at the commit in shared/VERSION, and when this port is
+  # on another MAJOR.MINOR line (hub ADR-0007 decision 3, amended by ADR-0008 for an unreleased
+  # port).
+  shared-check:
+    needs: version
+    permissions:
+      contents: read
+    uses: sanamhub/nepdate/.github/workflows/shared-check.yml@f71f3b6afe0366e16d76a0f4e0c00379cd7eaa92 # main 2026-11-03
+    with:
+      sdk: ruby
+      version: ${{ needs.version.outputs.version }}
+
+  actionlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install actionlint 1.7.12
+        run: |
+          set -euo pipefail
+          curl -sSLo actionlint.tar.gz \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  actionlint.tar.gz" | sha256sum -c -
+          tar -xzf actionlint.tar.gz actionlint
+          ./actionlint --version
+      - run: ./actionlint

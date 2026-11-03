@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: A wrong date, holiday or tithi
+    url: https://github.com/sanamhub/nepdate/issues
+    about: The calendar and patro data come from the hub. Report a data error there.
+  - name: A security problem
+    url: https://github.com/sanamhub/nepdate-ruby/security/advisories/new
+    about: Report it privately, never in a public issue.

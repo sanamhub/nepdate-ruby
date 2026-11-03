@@ -1,0 +1,41 @@
+name: Bug report
+description: A wrong result or an error that is not about the calendar data itself
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A wrong date, holiday or tithi comes from the shared data, not from this port: report that
+        in [sanamhub/nepdate](https://github.com/sanamhub/nepdate/issues). Report a security problem
+        privately as [SECURITY.md](https://github.com/sanamhub/nepdate-ruby/blob/main/SECURITY.md)
+        says, not here.
+  - type: input
+    id: version
+    attributes:
+      label: Gem and version
+      description: The output of `gem list nepdate` and, if relevant, `gem list nepdate-patro`.
+      placeholder: nepdate 1.0.0-rc.1
+    validations:
+      required: true
+  - type: input
+    id: ruby
+    attributes:
+      label: Ruby version and operating system
+      placeholder: Ruby 3.4.12 on Windows 11
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: A minimal snippet that shows the problem, the output you got and the output you expected.
+      render: ruby
+    validations:
+      required: true
+  - type: textarea
+    id: vectors
+    attributes:
+      label: A vector that covers it
+      description: If `shared/spec/vectors` has a row for this behaviour, name the file and the row.
+    validations:
+      required: false

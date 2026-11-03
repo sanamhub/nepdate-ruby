@@ -18,7 +18,7 @@ CORE_GEMSPEC = File.join(ROOT, "packages/nepdate/nepdate.gemspec")
 PATRO_GEMSPEC = File.join(ROOT, "packages/nepdate-patro/nepdate-patro.gemspec")
 LONG_EVENT = "World Day Against Human Trafficking"
 CLEAN_BUNDLER_ENV = {
-  "RUBYOPT" => nil, "RUBYLIB" => nil, "BUNDLE_GEMFILE" => nil, "BUNDLE_PATH" => nil,
+  "RUBYOPT" => nil, "BUNDLE_GEMFILE" => nil, "BUNDLE_PATH" => nil,
   "BUNDLE_WITH" => nil, "BUNDLE_BIN_PATH" => nil, "BUNDLER_SETUP" => nil,
   "BUNDLER_VERSION" => nil
 }.freeze

@@ -21,5 +21,5 @@ gem "rubocop-ast", "1.50.0"
 gem "simplecov", "1.3.2"
 # standard 1.50 pins RuboCop 1.75, so the lint rules are unchanged even though
 # rubocop-ast is newer.
-gem "standard", "1.50.0"
+gem "standard", "1.57.0"
 gem "yard", "0.9.45"

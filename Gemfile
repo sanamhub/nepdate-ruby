@@ -8,7 +8,7 @@ gem "nepdate-patro", path: "packages/nepdate-patro"
 # Development tools are pinned and published at least 14 days before the version in this
 # repository was written.
 gem "benchmark-ips", "2.15.1"
-gem "json", "2.9.1"
+gem "json", "3.1.0"
 # minitest 5.26.0 and older declare `required_ruby_version < 4.0`, so the Ruby 4.0
 # matrix cell could not install the bundle. 5.26.1 lifts that cap.
 gem "minitest", "5.26.1"

@@ -9,7 +9,9 @@ gem "nepdate-patro", path: "packages/nepdate-patro"
 # repository was written.
 gem "benchmark-ips", "2.15.1"
 gem "json", "2.9.1"
-gem "minitest", "5.25.4"
+# minitest 5.26.0 and older declare `required_ruby_version < 4.0`, so the Ruby 4.0
+# matrix cell could not install the bundle. 5.26.1 lifts that cap.
+gem "minitest", "5.26.1"
 gem "parser", "3.3.12.0"
 gem "rake", "13.4.2"
 gem "rbs", "4.2.0"

@@ -32,14 +32,12 @@ module NepDate
       while index < length
         byte = text.getbyte(index)
         digit = nil
-        separator = false
         width = 1
 
         if byte.between?(0x30, 0x39)
           digit = byte - 0x30
         elsif byte < 0x80
-          separator = SEPARATOR_BYTES.key?(byte)
-          invalid_character(text, index) unless separator
+          invalid_character(text, index) unless SEPARATOR_BYTES.key?(byte)
         elsif byte == 0xE0
           second = text.getbyte(index + 1)
           third = text.getbyte(index + 2)
@@ -48,7 +46,6 @@ module NepDate
               digit = third - 0xA6
               width = 3
             elsif third == 0xA4
-              separator = true
               width = 3
             else
               invalid_character(text, index)

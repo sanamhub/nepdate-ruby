@@ -10,6 +10,8 @@ module NepDate
     ALL = [CLAMP, SPILL].freeze
 
     def self.coerce(value)
+      return value if value == CLAMP || value == SPILL
+
       symbol = value.to_s.downcase.to_sym
       return symbol if ALL.include?(symbol)
 

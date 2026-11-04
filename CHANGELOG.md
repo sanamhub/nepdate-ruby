@@ -32,3 +32,11 @@ repository joins at `1.0.0-rc.1` with the other ports
 - CI on Linux, macOS and Windows over Ruby 3.4, the current stable release and `head`, the hub's
   shared-check, CodeQL for Ruby and Actions, Scorecard, dependency review, and the release and
   verify-published workflows.
+
+### Changed
+
+- The gem version is `1.0.0.rc.1`, the RubyGems spelling of the family's `1.0.0-rc.1`. The tag,
+  changelog, README prose and hub keep the family spelling, and the release check maps between them.
+- Conversion, day and month arithmetic, formatting, strict parsing, patro lookup and range iteration
+  use precomputed tables and direct integer paths. B1 to B8 are within 1.5 times the Python port
+  without YJIT, and faster with it; the numbers are in `docs/benchmarks.md`.

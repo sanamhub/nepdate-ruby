@@ -6,6 +6,7 @@
 #   ruby scripts/release_check.rb --draft              # CI dry run, accepts [Unreleased]
 #   ruby scripts/release_check.rb --draft v1.0.0-rc.1  # a dry run against a tag name
 #   ruby scripts/release_check.rb v1.0.0-rc.1          # a real tag: the version heading must exist
+#   ruby scripts/release_check.rb 1.0.0.rc.1           # the gem spelling works too
 
 require "fileutils"
 require "open3"
@@ -31,6 +32,16 @@ end
 def version_from(path)
   require path
   path.include?("patro") ? NepDate::Patro::VERSION : NepDate::VERSION
+end
+
+# RubyGems reads 1.0.0.rc.1 as the release candidate while the family, the changelog and the tag
+# use the SemVer spelling 1.0.0-rc.1. These two helpers are the only place the mapping lives.
+def family_version(version)
+  version.sub(/\.((?:alpha|beta|rc)\.\d+)\z/, '-\1')
+end
+
+def gem_version(version)
+  version.sub(/-((?:alpha|beta|rc)\.\d+)\z/, '.\1')
 end
 
 def gem_file(name, version)
@@ -73,22 +84,26 @@ if print_only
 end
 
 if tag
-  expected = tag.start_with?("v") ? tag.delete_prefix("v") : tag
-  assert(expected == core_version, "tag #{tag} does not name the manifest version #{core_version}")
+  given = tag.start_with?("v") ? tag.delete_prefix("v") : tag
+  assert(
+    given == core_version || given == family_version(core_version),
+    "tag #{tag} does not name the gem version #{core_version} or its family spelling #{family_version(core_version)}"
+  )
 end
 
 changelog = File.read(File.join(ROOT, "CHANGELOG.md"), encoding: "UTF-8")
 if draft
   assert(changelog.include?("## [Unreleased]"), "CHANGELOG.md has no [Unreleased] heading")
 else
-  heading = "## [#{core_version}]"
+  heading = "## [#{family_version(core_version)}]"
   assert(changelog.include?(heading), "CHANGELOG.md has no #{heading} heading")
 end
 
 core_spec = Gem::Specification.load(CORE_GEMSPEC) or fail_with("cannot load #{CORE_GEMSPEC}")
 patro_spec = Gem::Specification.load(PATRO_GEMSPEC) or fail_with("cannot load #{PATRO_GEMSPEC}")
-# RubyGems writes a hyphenated prerelease as `.pre.rc.1` internally while the manifest, tag and
-# changelog keep the family's SemVer spelling. Gem::Version comparison accepts both spellings.
+# The manifest uses RubyGems' own prerelease spelling, 1.0.0.rc.1, while the tag and the changelog
+# keep the family's 1.0.0-rc.1. Gem::Version reads both, so the gemspec and the dependency compare
+# by version rather than by string.
 assert(Gem::Version.new(core_version) == core_spec.version,
   "nepdate.gemspec version is #{core_spec.version} for #{core_version}")
 assert(Gem::Version.new(patro_version) == patro_spec.version,

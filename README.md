@@ -39,16 +39,19 @@ the other ports, checked against the shared vectors.
 ## Install
 
 ```sh
-gem install nepdate -v 1.0.0-rc.1
-gem install nepdate-patro -v 1.0.0-rc.1
+gem install nepdate -v 1.0.0.rc.1
+gem install nepdate-patro -v 1.0.0.rc.1
 ```
 
 In a Gemfile:
 
 ```text
-gem "nepdate", "1.0.0-rc.1"
-gem "nepdate-patro", "1.0.0-rc.1" # tithi, holidays and events
+gem "nepdate", "1.0.0.rc.1"
+gem "nepdate-patro", "1.0.0.rc.1" # tithi, holidays and events
 ```
+
+RubyGems spells this release candidate `1.0.0.rc.1`; the tag and the changelog keep the family
+spelling `v1.0.0-rc.1`.
 
 ```ruby
 require "nepdate"
@@ -302,11 +305,12 @@ and are listed in [docs/API.md](https://github.com/sanamhub/nepdate-ruby/blob/ma
 
 ## Benchmarks
 
-`bench/` measures B1 to B8 of the shared benchmark specification against the C# NepDate baseline.
-No RubyGems library passes the maturity and usage bar, so there is no Ruby competitor column; the
+`bench/` measures B1 to B8 of the shared benchmark specification against the C# NepDate baseline
+and the Python port, the closest same-kind runtime. No RubyGems library passes the maturity and
+usage bar, so there is no Ruby competitor column; the
 evidence is in [docs/competitors.md](https://github.com/sanamhub/nepdate-ruby/blob/main/docs/competitors.md).
-The machine, the method and the current preliminary numbers are in
-[docs/benchmarks.md](https://github.com/sanamhub/nepdate-ruby/blob/main/docs/benchmarks.md).
+The machine, the method and the current numbers, including the Python reference and the YJIT row,
+are in [docs/benchmarks.md](https://github.com/sanamhub/nepdate-ruby/blob/main/docs/benchmarks.md).
 
 ## Contributing
 

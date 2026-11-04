@@ -53,9 +53,29 @@ module NepDate
     end
 
     def self.digits(number, lang = :en, width: 0)
+      if width == 4 && number >= CalendarTable::MIN_YEAR && number <= CalendarTable::MAX_YEAR
+        return (lang == :ne) ? YEAR_NE[number - CalendarTable::MIN_YEAR] : YEAR_EN[number - CalendarTable::MIN_YEAR]
+      end
+      if width == 2 && number >= 0 && number <= 99
+        return (lang == :ne) ? TWO_DIGIT_NE[number] : TWO_DIGIT_EN[number]
+      end
+      if width.zero? && number >= 0 && number <= 99
+        return (lang == :ne) ? NUMBER_NE[number] : NUMBER_EN[number]
+      end
+
       text = number.to_s
       text = text.rjust(width, "0") if width.positive?
       (lang == :ne) ? nepali_digits(text) : text
     end
+
+    # The short and long forms of every digit string the formatters need, built once at load so a
+    # formatting call only reads a String. Years are 1901 through 2199; the two-digit and plain
+    # tables cover dates, months and the two-digit year.
+    NUMBER_EN = (0..99).map(&:to_s).freeze
+    NUMBER_NE = NUMBER_EN.map { |text| nepali_digits(text) }.freeze
+    TWO_DIGIT_EN = (0..99).map { |number| number.to_s.rjust(2, "0") }.freeze
+    TWO_DIGIT_NE = TWO_DIGIT_EN.map { |text| nepali_digits(text) }.freeze
+    YEAR_EN = (CalendarTable::MIN_YEAR..CalendarTable::MAX_YEAR).map(&:to_s).freeze
+    YEAR_NE = YEAR_EN.map { |text| nepali_digits(text) }.freeze
   end
 end

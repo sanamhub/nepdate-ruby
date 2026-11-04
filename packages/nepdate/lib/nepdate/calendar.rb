@@ -10,10 +10,10 @@ module NepDate
 
     def month_length(year, month)
       index = year - CalendarTable::MIN_YEAR
-      unless (0...CalendarTable::YEARS).cover?(index)
+      unless index >= 0 && index < CalendarTable::YEARS
         raise OutOfRangeError, "year #{year} is outside #{CalendarTable::MIN_YEAR}..#{CalendarTable::MAX_YEAR}"
       end
-      unless (1..12).cover?(month)
+      unless month.between?(1, 12)
         raise InvalidMonthError, "month #{month} is outside 1..12"
       end
 
@@ -22,60 +22,19 @@ module NepDate
     end
 
     def to_serial(year, month, day)
-      index = year - CalendarTable::MIN_YEAR
-      serial = CalendarTable::YEAR_START.fetch(index)
-      packed = CalendarTable::PACKED.fetch(index)
-      current = 1
-      while current < month
-        serial += 29 + ((packed >> (2 * (current - 1))) & 0b11)
-        current += 1
-      end
-      serial + day - 1
-    end
-
-    # [year, month, day] for a valid serial.
-    def from_serial(serial)
-      unless (0..CalendarTable::MAX_SERIAL).cover?(serial)
-        raise OutOfRangeError, "serial #{serial} is outside 0..#{CalendarTable::MAX_SERIAL}"
-      end
-
-      starts = CalendarTable::YEAR_START
-      low = 0
-      high = CalendarTable::YEARS - 1
-      while low < high
-        middle = (low + high + 1) / 2
-        if starts[middle] <= serial
-          low = middle
-        else
-          high = middle - 1
-        end
-      end
-
-      year = CalendarTable::MIN_YEAR + low
-      remaining = serial - starts[low]
-      packed = CalendarTable::PACKED[low]
-      month = 1
-      loop do
-        length = 29 + ((packed >> (2 * (month - 1))) & 0b11)
-        break if remaining < length
-
-        remaining -= length
-        month += 1
-      end
-
-      [year, month, remaining + 1]
+      CalendarTable::MONTH_START.fetch((year - CalendarTable::MIN_YEAR) * 12 + month - 1) + day - 1
     end
 
     def validate(year, month, day)
-      unless (CalendarTable::MIN_YEAR..CalendarTable::MAX_YEAR).cover?(year)
+      unless year.between?(CalendarTable::MIN_YEAR, CalendarTable::MAX_YEAR)
         raise OutOfRangeError, "year #{year} is outside #{CalendarTable::MIN_YEAR}..#{CalendarTable::MAX_YEAR}"
       end
-      unless (1..12).cover?(month)
+      unless month.between?(1, 12)
         raise InvalidMonthError, "month #{month} is outside 1..12"
       end
 
       length = month_length(year, month)
-      unless (1..length).cover?(day)
+      unless day.between?(1, length)
         raise InvalidDayError, "day #{day} is outside 1..#{length}"
       end
 

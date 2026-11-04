@@ -37,7 +37,8 @@ suite or calendar range statement. None offers the hub API, ranges, fiscal years
 ## Why no Ruby sibling
 
 The Java port compared itself with the Kotlin port because both run on the JVM and are maintained as
-siblings. Ruby has no sibling port. The family reference is C# NepDate, whose numbers are in
-[`docs/benchmarks.md`](benchmarks.md); a cross-runtime comparison with Python would measure the
-interpreters as much as the libraries and is not a same-language reference, so it is not used for a
-verdict.
+siblings. Ruby has no sibling port and no RubyGems library above the usage floor. The closest
+same-kind reference is the Python port: both are interpreted, dynamically typed runtimes with the
+same table-driven design, so `docs/benchmarks.md` measures Python in the same session and uses it as
+the 1.5x target. Python is not a RubyGems competitor, so it is not in the competitor table and is not
+counted by the section 7 rule; C# NepDate remains the family baseline.

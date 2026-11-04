@@ -31,8 +31,21 @@ module NepDate
       year = Date.integer_argument(year, "year")
       month = Date.integer_argument(month, "month")
       day = Date.integer_argument(day, "day")
-      Calendar.validate(year, month, day)
-      initialize_parts(year, month, day, Calendar.to_serial(year, month, day))
+      index = year - CalendarTable::MIN_YEAR
+      unless index >= 0 && index < CalendarTable::YEARS
+        raise OutOfRangeError, "year #{year} is outside #{CalendarTable::MIN_YEAR}..#{CalendarTable::MAX_YEAR}"
+      end
+      unless month.between?(1, 12)
+        raise InvalidMonthError, "month #{month} is outside 1..12"
+      end
+
+      packed = CalendarTable::PACKED.fetch(index)
+      length = 29 + ((packed >> (2 * (month - 1))) & 0b11)
+      unless day.between?(1, length)
+        raise InvalidDayError, "day #{day} is outside 1..#{length}"
+      end
+
+      initialize_parts(year, month, day, CalendarTable::MONTH_START.fetch(index * 12 + month - 1) + day - 1)
     end
 
     class << self
@@ -53,7 +66,7 @@ module NepDate
         end
 
         serial = Calendar.days_from_civil(year, month, day) - CalendarTable::EPOCH_UNIX_DAYS
-        unless (0..CalendarTable::MAX_SERIAL).cover?(serial)
+        unless serial.between?(0, CalendarTable::MAX_SERIAL)
           raise OutOfRangeError, "#{year}-#{month}-#{day} is outside the supported range"
         end
 
@@ -66,7 +79,8 @@ module NepDate
           raise ArgumentError, "expected a ::Date, got #{value.class}"
         end
 
-        from_gregorian(value.year, value.month, value.day)
+        # ::Date already validates its fields, so its Julian day is the serial plus a constant.
+        from_serial(value.jd - CalendarTable::JULIAN_EPOCH)
       end
 
       # Converts a +Time+ in the time's own offset.
@@ -233,8 +247,19 @@ module NepDate
 
       # @api private
       def from_serial(serial)
-        year, month, day = Calendar.from_serial(serial)
-        from_parts(year, month, day, serial)
+        unless serial.between?(0, CalendarTable::MAX_SERIAL)
+          raise OutOfRangeError, "serial #{serial} is outside 0..#{CalendarTable::MAX_SERIAL}"
+        end
+
+        index = CalendarTable::BUCKET[serial >> 5]
+        index += 1 if serial >= CalendarTable::MONTH_START[index + 1]
+        index += 1 if serial >= CalendarTable::MONTH_START[index + 1]
+        from_parts(
+          CalendarTable::MIN_YEAR + index / 12,
+          index % 12 + 1,
+          serial - CalendarTable::MONTH_START[index] + 1,
+          serial
+        )
       end
 
       # Public integer arguments are never coerced from floats or strings, so a truncated value
@@ -327,9 +352,12 @@ module NepDate
     end
 
     def add_days(days)
-      days = Date.integer_argument(days, "days")
+      unless days.is_a?(Integer)
+        raise TypeError, "days must be an Integer, got #{days.class}"
+      end
+
       target = serial + days
-      unless (0..CalendarTable::MAX_SERIAL).cover?(target)
+      unless target.between?(0, CalendarTable::MAX_SERIAL)
         raise OutOfRangeError, "day offset #{days} is outside the supported range"
       end
 
@@ -337,28 +365,28 @@ module NepDate
     end
 
     def add_months(months, overflow: :clamp)
-      months = Date.integer_argument(months, "months")
-      mode = MonthOverflow.coerce(overflow)
+      unless months.is_a?(Integer)
+        raise TypeError, "months must be an Integer, got #{months.class}"
+      end
+
+      mode = (overflow == :clamp || overflow == :spill) ? overflow : MonthOverflow.coerce(overflow)
       total = (year - CalendarTable::MIN_YEAR) * 12 + (month - 1) + months
-      if total.negative? || total >= CalendarTable::YEARS * 12
+      if total < 0 || total >= CalendarTable::YEARS * 12
         raise OutOfRangeError, "month offset #{months} is outside the supported range"
       end
 
       target_year = CalendarTable::MIN_YEAR + total / 12
       target_month = total % 12 + 1
-      length = Calendar.month_length(target_year, target_month)
+      target_index = total
+      packed = CalendarTable::PACKED.fetch(target_year - CalendarTable::MIN_YEAR)
+      length = 29 + ((packed >> (2 * (target_month - 1))) & 0b11)
+      target_start = CalendarTable::MONTH_START.fetch(target_index)
 
       if day <= length
-        return Date.from_parts(
-          target_year, target_month, day,
-          Calendar.to_serial(target_year, target_month, day)
-        )
+        return Date.from_parts(target_year, target_month, day, target_start + day - 1)
       end
       if mode == :clamp
-        return Date.from_parts(
-          target_year, target_month, length,
-          Calendar.to_serial(target_year, target_month, length)
-        )
+        return Date.from_parts(target_year, target_month, length, target_start + length - 1)
       end
 
       spill_year = (target_month == 12) ? target_year + 1 : target_year
@@ -370,7 +398,7 @@ module NepDate
       spill_day = day - length
       Date.from_parts(
         spill_year, spill_month, spill_day,
-        Calendar.to_serial(spill_year, spill_month, spill_day)
+        CalendarTable::MONTH_START.fetch(target_index + 1) + spill_day - 1
       )
     end
 
@@ -472,11 +500,24 @@ module NepDate
     end
 
     def to_long_string(weekday: false, year: true, pad: true, lang: :en)
-      Format.long(
-        self.year, month, day,
-        weekday_number: weekday ? self.weekday.number : nil,
-        include_year: year, pad: pad, lang: lang
-      )
+      lang = Lang.coerce(lang) unless lang == :en || lang == :ne
+      if lang == :ne
+        day_text = pad ? Names::TWO_DIGIT_NE[@day] : Names::NUMBER_NE[@day]
+        year_text = Names::YEAR_NE[@year - CalendarTable::MIN_YEAR]
+        month_text = Names::MONTH_NE[@month]
+        weekday_text = Names::WEEKDAY_NE[(serial + CalendarTable::EPOCH_WEEKDAY) % 7] if weekday
+      else
+        day_text = pad ? Names::TWO_DIGIT_EN[@day] : Names::NUMBER_EN[@day]
+        year_text = Names::YEAR_EN[@year - CalendarTable::MIN_YEAR]
+        month_text = Names::MONTH_EN[@month]
+        weekday_text = Names::WEEKDAY_EN[(serial + CalendarTable::EPOCH_WEEKDAY) % 7] if weekday
+      end
+
+      text = +""
+      text << weekday_text << ", " if weekday
+      text << month_text << " " << day_text
+      text << ", " << year_text if year
+      text
     end
 
     def to_unicode_string(order: :ymd, separator: :slash, pad: true)

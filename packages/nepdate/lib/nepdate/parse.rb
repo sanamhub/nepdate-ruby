@@ -19,6 +19,9 @@ module NepDate
     def strict(text)
       raise TypeError, "date text must be a String, got #{text.class}" unless text.is_a?(String)
 
+      fast = fast_ascii(text)
+      return fast if fast
+
       groups = [0, 0, 0]
       count = 0
       in_group = false
@@ -84,6 +87,37 @@ module NepDate
       end
 
       groups
+    end
+
+    # The common YYYY/MM/DD form (and every other one-byte separator) without the byte scanner.
+    # Returns nil when the text is not exactly four, two and two ASCII digits, so the scanner can
+    # report the precise error or accept Devanagari digits.
+    def fast_ascii(text)
+      return nil unless text.bytesize == 10
+
+      first = text.getbyte(0)
+      second = text.getbyte(1)
+      third = text.getbyte(2)
+      fourth = text.getbyte(3)
+      fifth = text.getbyte(5)
+      sixth = text.getbyte(6)
+      eighth = text.getbyte(8)
+      ninth = text.getbyte(9)
+      return nil unless first.between?(0x30, 0x39) &&
+        second.between?(0x30, 0x39) &&
+        third.between?(0x30, 0x39) &&
+        fourth.between?(0x30, 0x39) &&
+        fifth.between?(0x30, 0x39) &&
+        sixth.between?(0x30, 0x39) &&
+        eighth.between?(0x30, 0x39) &&
+        ninth.between?(0x30, 0x39)
+      return nil unless SEPARATOR_BYTES.key?(text.getbyte(4)) && SEPARATOR_BYTES.key?(text.getbyte(7))
+
+      [
+        (first - 0x30) * 1000 + (second - 0x30) * 100 + (third - 0x30) * 10 + (fourth - 0x30),
+        (fifth - 0x30) * 10 + (sixth - 0x30),
+        (eighth - 0x30) * 10 + (ninth - 0x30)
+      ]
     end
 
     def invalid_character(text, index)

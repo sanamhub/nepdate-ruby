@@ -5,8 +5,10 @@
 # as "not measured", which the benchmark spec allows for a dynamic language.
 #
 #   ruby -Ipackages/nepdate/lib -Ipackages/nepdate-patro/lib bench/bench.rb
+#   ruby --yjit ... bench/bench.rb --label yjit
 #
-# Every result is written to bench/results/<date>.json and printed as a table.
+# Every result is written to bench/results/<date>.json, or <date>-<label>.json with --label, and
+# printed as a table. The result records whether YJIT was enabled.
 
 require "json"
 require "time"
@@ -57,6 +59,7 @@ module Bench
   end
 
   def run
+    yjit = !!(defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?)
     dates = core_dates
     patro_inputs = patro_dates
     patro_ranges = patro_inputs.map { |date| NepDate::DateRange.for_month(date.year, date.month) }
@@ -114,6 +117,7 @@ module Bench
       "ruby" => RUBY_DESCRIPTION,
       "ruby_version" => RUBY_VERSION,
       "platform" => RUBY_PLATFORM,
+      "yjit" => yjit,
       "inputs" => 64,
       "warmup" => "one pass, then a pass of at least 0.15 s",
       "samples" => 10,
@@ -132,11 +136,18 @@ module Bench
 end
 
 if $PROGRAM_NAME == __FILE__
+  label = nil
+  if (position = ARGV.index("--label"))
+    label = ARGV[position + 1]
+    abort "bench: --label needs a name" if label.nil? || label.empty?
+  end
   result = Bench.run
   directory = File.expand_path("results", __dir__)
   require "fileutils"
   FileUtils.mkdir_p(directory)
-  path = File.join(directory, "#{Time.now.utc.strftime("%Y-%m-%d")}.json")
+  name = Time.now.utc.strftime("%Y-%m-%d")
+  name = "#{name}-#{label}" if label
+  path = File.join(directory, "#{name}.json")
   File.write(path, JSON.pretty_generate(result) + "\n", encoding: "UTF-8")
   puts "wrote #{path}"
 end

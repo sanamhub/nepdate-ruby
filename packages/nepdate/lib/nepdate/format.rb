@@ -11,20 +11,20 @@ module NepDate
 
     def default(year, month, day, lang)
       lang = Lang.coerce(lang)
-      [
-        Names.digits(year, lang, width: 4),
-        Names.digits(month, lang, width: 2),
-        Names.digits(day, lang, width: 2)
-      ].join("/")
+      if lang == :ne
+        "#{Names::YEAR_NE[year - CalendarTable::MIN_YEAR]}/#{Names::TWO_DIGIT_NE[month]}/#{Names::TWO_DIGIT_NE[day]}"
+      else
+        "#{Names::YEAR_EN[year - CalendarTable::MIN_YEAR]}/#{Names::TWO_DIGIT_EN[month]}/#{Names::TWO_DIGIT_EN[day]}"
+      end
     end
 
     def iso8601(year, month, day, lang)
       lang = Lang.coerce(lang)
-      [
-        Names.digits(year, lang, width: 4),
-        Names.digits(month, lang, width: 2),
-        Names.digits(day, lang, width: 2)
-      ].join("-")
+      if lang == :ne
+        "#{Names::YEAR_NE[year - CalendarTable::MIN_YEAR]}-#{Names::TWO_DIGIT_NE[month]}-#{Names::TWO_DIGIT_NE[day]}"
+      else
+        "#{Names::YEAR_EN[year - CalendarTable::MIN_YEAR]}-#{Names::TWO_DIGIT_EN[month]}-#{Names::TWO_DIGIT_EN[day]}"
+      end
     end
 
     def short(year, month, day, order:, separator:, pad:, lang:)
@@ -42,12 +42,20 @@ module NepDate
 
     def long(year, month, day, weekday_number:, include_year:, pad:, lang:)
       lang = Lang.coerce(lang)
-      day_text = Names.digits(day, lang, width: pad ? 2 : 0)
-      year_text = Names.digits(year, lang, width: 4)
-      prefix = weekday_number.nil? ? "" : "#{Names.weekday_name(weekday_number, lang)}, "
+      if lang == :ne
+        day_text = pad ? Names::TWO_DIGIT_NE[day] : Names::NUMBER_NE[day]
+        year_text = Names::YEAR_NE[year - CalendarTable::MIN_YEAR]
+        month_text = Names::MONTH_NE[month]
+        prefix = weekday_number.nil? ? "" : "#{Names::WEEKDAY_NE[weekday_number]}, "
+      else
+        day_text = pad ? Names::TWO_DIGIT_EN[day] : Names::NUMBER_EN[day]
+        year_text = Names::YEAR_EN[year - CalendarTable::MIN_YEAR]
+        month_text = Names::MONTH_EN[month]
+        prefix = weekday_number.nil? ? "" : "#{Names::WEEKDAY_EN[weekday_number]}, "
+      end
       suffix = include_year ? ", #{year_text}" : ""
 
-      "#{prefix}#{Names.month_name(month, lang)} #{day_text}#{suffix}"
+      "#{prefix}#{month_text} #{day_text}#{suffix}"
     end
 
     def pattern(pattern, year:, month:, day:, lang:)

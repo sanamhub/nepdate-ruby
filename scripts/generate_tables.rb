@@ -35,6 +35,7 @@ def generate
 
   packed = []
   year_start = [0]
+  month_start = []
   cursor = 0
   (min_year..max_year).each do |year|
     months = lengths.fetch(year.to_s)
@@ -45,14 +46,32 @@ def generate
     bits = 0
     months.each_with_index { |length, index| bits |= (length - 29) << (2 * index) }
     packed << bits
-    cursor += months.sum
+    months.each do |length|
+      month_start << cursor
+      cursor += length
+    end
     year_start << cursor
   end
 
+  month_start << cursor
   total_days = year_start.last
   max_serial = total_days - 1
+
+  # A bucket is 32 days, one more than the longest month, so a serial is at most two month
+  # starts past the bucket's own month.
+  bucket = []
+  bucket_start = 0
+  month_index = 0
+  while bucket_start <= max_serial
+    month_index += 1 while month_index + 1 < month_start.length && month_start[month_index + 1] <= bucket_start
+    bucket << month_index
+    bucket_start += 32
+  end
+
   packed_lines = packed.each_slice(12).map { |slice| "      #{slice.join(", ")}," }
   start_lines = year_start.each_slice(12).map { |slice| "      #{slice.join(", ")}," }
+  month_lines = month_start.each_slice(12).map { |slice| "      #{slice.join(", ")}," }
+  bucket_lines = bucket.each_slice(15).map { |slice| "      #{slice.join(", ")}," }
 
   <<~RUBY
     # frozen_string_literal: true
@@ -72,6 +91,8 @@ def generate
         MAX_SERIAL = #{max_serial}
         EPOCH_UNIX_DAYS = -45920
         EPOCH_WEEKDAY = 4
+        # The Julian day number of serial 0, so a ::Date can convert without splitting its fields.
+        JULIAN_EPOCH = 2394668
 
         # Twelve two-bit values per year: month length minus 29, month 1 in the lowest bits.
         PACKED = [
@@ -81,6 +102,18 @@ def generate
         # The serial of 1 Baishakh for every year, plus the serial one day after the last year.
         YEAR_START = [
     #{start_lines.join("\n")}
+        ].freeze
+
+        # The serial of the first day of every month, plus the serial one day after the last
+        # month. Month index 0 is 1901-01 and index 3587 is 2199-12.
+        MONTH_START = [
+    #{month_lines.join("\n")}
+        ].freeze
+
+        # For each 32-day bucket, the month index containing its first day. A lookup checks at
+        # most two following month starts, because no month is longer than 32 days.
+        BUCKET = [
+    #{bucket_lines.join("\n")}
         ].freeze
       end
     end

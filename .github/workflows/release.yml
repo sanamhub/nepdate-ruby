@@ -28,6 +28,7 @@ jobs:
     timeout-minutes: 20
     outputs:
       version: ${{ steps.check.outputs.version }}
+      family: ${{ steps.check.outputs.family }}
     steps:
       # Full history, so a tag can be checked against main.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -56,7 +57,10 @@ jobs:
             # The dry run accepts the Unreleased heading until the bump pull request.
             ruby scripts/release_check.rb --draft "$TAG"
           fi
-          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          # The gem version spells the candidate 1.0.0.rc.1; the tag and the family keep
+          # 1.0.0-rc.1. The file names and gem push use the gem version.
+          echo "version=$(ruby scripts/release_check.rb --print)" >> "$GITHUB_OUTPUT"
+          echo "family=${TAG#v}" >> "$GITHUB_OUTPUT"
 
   ci:
     name: ci
@@ -86,6 +90,7 @@ jobs:
       id-token: write
     env:
       VERSION: ${{ needs.preflight.outputs.version }}
+      FAMILY: ${{ needs.preflight.outputs.family }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -111,11 +116,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          ruby scripts/release_notes.rb "$VERSION" > "$RUNNER_TEMP/notes.md"
+          ruby scripts/release_notes.rb "$VERSION" "$FAMILY" > "$RUNNER_TEMP/notes.md"
           prerelease=()
-          case "$VERSION" in *-*) prerelease=(--prerelease) ;; esac
+          case "$FAMILY" in *-*) prerelease=(--prerelease) ;; esac
           gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag \
-            --title "nepdate-ruby $VERSION" --notes-file "$RUNNER_TEMP/notes.md" "${prerelease[@]}"
+            --title "nepdate-ruby $FAMILY" --notes-file "$RUNNER_TEMP/notes.md" "${prerelease[@]}"
 
   verify-published:
     name: verify-published

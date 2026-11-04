@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-04T03:15:51Z",
+  "ruby": "ruby 3.4.12 (2026-10-23 revision 366f5fdc00) +PRISM [x86_64-linux]",
+  "ruby_version": "3.4.12",
+  "platform": "x86_64-linux",
+  "yjit": false,
+  "inputs": 64,
+  "warmup": "one pass, then a pass of at least 0.15 s",
+  "samples": 10,
+  "measurement": "manual monotonic clock; one iteration is all 64 inputs; B8 is one month grid per input",
+  "bytes": "not measured; Ruby has no reliable per-operation byte allocator",
+  "operations": {
+    "B1": {
+      "operation": "BS to AD",
+      "ns_per_operation": 519.2,
+      "stddev_ns": 65.5,
+      "iterations": 4096,
+      "bytes_per_operation": null
+    },
+    "B2": {
+      "operation": "AD to BS",
+      "ns_per_operation": 449.6,
+      "stddev_ns": 15.3,
+      "iterations": 8192,
+      "bytes_per_operation": null
+    },
+    "B3": {
+      "operation": "add 1000 days",
+      "ns_per_operation": 503.3,
+      "stddev_ns": 31.3,
+      "iterations": 8192,
+      "bytes_per_operation": null
+    },
+    "B4": {
+      "operation": "add 13 months, Clamp",
+      "ns_per_operation": 464.2,
+      "stddev_ns": 14.3,
+      "iterations": 8192,
+      "bytes_per_operation": null
+    },
+    "B5": {
+      "operation": "long format, Nepali, weekday",
+      "ns_per_operation": 413.5,
+      "stddev_ns": 10.5,
+      "iterations": 8192,
+      "bytes_per_operation": null
+    },
+    "B6": {
+      "operation": "strict parse YYYY/MM/DD",
+      "ns_per_operation": 1337.3,
+      "stddev_ns": 40.0,
+      "iterations": 2048,
+      "bytes_per_operation": null
+    },
+    "B7": {
+      "operation": "patro info",
+      "ns_per_operation": 112.2,
+      "stddev_ns": 0.9,
+      "iterations": 32768,
+      "bytes_per_operation": null
+    },
+    "B8": {
+      "operation": "patro month grid",
+      "ns_per_operation": 16883.3,
+      "stddev_ns": 779.5,
+      "iterations": 256,
+      "bytes_per_operation": null
+    }
+  }
+}

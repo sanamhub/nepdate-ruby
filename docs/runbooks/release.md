@@ -33,10 +33,10 @@ Do these in order. Do not create the tag until all of them are done.
 
 ## The version
 
-- Both gems, the tag, the changelog and the hub entry use `1.0.0-rc.1`.
-- RubyGems normalizes the hyphen to `.pre.` and stores `1.0.0.pre.rc.1`. That is the same
-  `Gem::Version`; `gem install nepdate -v 1.0.0-rc.1` and Bundler accept the family spelling. The
-  registry page shows the normalized spelling.
+- The two gems use RubyGems' release-candidate spelling `1.0.0.rc.1`, the spelling users type with
+  `gem install -v` and in a Gemfile.
+- The tag, the changelog heading, the README prose and the hub entry use the family spelling
+  `1.0.0-rc.1`. `scripts/release_check.rb` maps the tag to the gem version, so both names check.
 - The tag is `v1.0.0-rc.1`. The `production` environment allows only `v*`.
 
 ## Before the tag
@@ -47,7 +47,7 @@ Do these in order. Do not create the tag until all of them are done.
 2. `bundle exec rake ci` is green on `main`.
 3. `bundle exec ruby scripts/release_check.rb --draft v1.0.0-rc.1` is green. This builds both gems,
    checks their contents, installs them into a temporary `GEM_HOME` and runs them.
-4. `docs/benchmarks.md` has a quiet rerun, or explicitly says preliminary.
+4. `docs/benchmarks.md` has a quiet run on the reference machine, with the CPU load recorded.
 5. The changelog has a `## [1.0.0-rc.1] - YYYY-MM-DD` section. The dry run accepts `[Unreleased]`
    until the bump pull request; a tag does not.
 6. The pending publishers and the `production` environment exist.

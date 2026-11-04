@@ -10,32 +10,49 @@ module NepDate
   # The patro (पात्रो, the Nepali almanac): tithi, public holidays and events per BS day. It is
   # a separate gem that depends on +nepdate+; the core gem has no almanac data.
   module Patro
-    # A binary search over an ascending frozen array of serials.
-    # @api private
-    module Lookup
-      module_function
-
-      def index_of(sorted, value)
-        low = 0
-        high = sorted.length - 1
-        while low <= high
-          middle = (low + high) / 2
-          candidate = sorted[middle]
-          return middle if candidate == value
-
-          if candidate < value
-            low = middle + 1
-          else
-            high = middle - 1
-          end
-        end
-        nil
+    # Builds one immutable CalendarInfo per coverage day, sharing the tithi and event objects. A
+    # lookup is then an array read, as in the Python port, instead of a binary search and three
+    # allocations per call.
+    def self.build_day_info(serial, holiday, event_days)
+      tithi = if serial.between?(Table::TITHI_FIRST_SERIAL, Table::TITHI_LAST_SERIAL)
+        TITHI_OBJECTS[Table::TITHI_INDEX[serial - Table::TITHI_FIRST_SERIAL]]
+      end
+      public_holiday = holiday.key?(serial)
+      events = EMPTY_EVENTS
+      position = event_days[serial]
+      if position
+        first = Table::EVENT_START[position]
+        last = Table::EVENT_START[position + 1]
+        events = Array.new(last - first) { |offset| EVENT_OBJECTS[Table::EVENTS_FLAT[first + offset]] }
       end
 
-      def include?(sorted, value)
-        !index_of(sorted, value).nil?
+      if tithi.nil? && !public_holiday && events.empty?
+        EMPTY_INFO
+      else
+        CalendarInfo.new(tithi: tithi, public_holiday: public_holiday, events: events)
       end
     end
+    private_class_method :build_day_info
+
+    TITHI_OBJECTS = Table::NAMES.map { |nepali, english| Tithi.new(nepali, english) }.freeze
+    EVENT_OBJECTS = Table::NAMES.map { |nepali, english| Event.new(nepali, english) }.freeze
+    EMPTY_EVENTS = [].freeze
+    EMPTY_INFO = CalendarInfo.new
+    DAY_INFO = begin
+      holiday = {}
+      Table::HOLIDAY_SERIALS.each { |serial| holiday[serial] = true }
+      event_days = {}
+      Table::EVENT_DAY_SERIALS.each_with_index { |serial, index| event_days[serial] = index }
+      info = Array.new(CalendarTable::TOTAL_DAYS, EMPTY_INFO)
+      (Table::FIRST_SERIAL..Table::LAST_SERIAL).each do |serial|
+        info[serial] = build_day_info(serial, holiday, event_days)
+      end
+      info.freeze
+    end
+    COVERAGE = NepDate::DateRange.new(
+      NepDate::Date.from_serial(Table::FIRST_SERIAL),
+      NepDate::Date.from_serial(Table::LAST_SERIAL)
+    )
 
     class << self
       # Everything the patro knows about +date+, never nil for the date itself. A day without
@@ -43,36 +60,13 @@ module NepDate
       def info(date)
         raise TypeError, "expected a NepDate::Date, got #{date.class}" unless date.is_a?(NepDate::Date)
 
-        serial = date.serial
-        tithi = if serial.between?(Table::TITHI_FIRST_SERIAL, Table::TITHI_LAST_SERIAL)
-          index = Table::TITHI_INDEX.fetch(serial - Table::TITHI_FIRST_SERIAL)
-          Tithi.new(*Table::NAMES.fetch(index))
-        end
-
-        events = []
-        day_index = Lookup.index_of(Table::EVENT_DAY_SERIALS, serial)
-        if day_index
-          first = Table::EVENT_START.fetch(day_index)
-          last = Table::EVENT_START.fetch(day_index + 1)
-          (first...last).each do |position|
-            events << Event.new(*Table::NAMES.fetch(Table::EVENTS_FLAT.fetch(position)))
-          end
-        end
-
-        CalendarInfo.new(
-          tithi: tithi,
-          public_holiday: Lookup.include?(Table::HOLIDAY_SERIALS, serial),
-          events: events
-        )
+        DAY_INFO[date.serial]
       end
       alias_method :of, :info
 
       # The smallest BS range containing every day with tithi, holiday or event data.
       def coverage
-        NepDate::DateRange.new(
-          NepDate::Date.from_serial(Table::FIRST_SERIAL),
-          NepDate::Date.from_serial(Table::LAST_SERIAL)
-        )
+        COVERAGE
       end
 
       # Every gazetted public holiday, ascending.

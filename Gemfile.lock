@@ -1,13 +1,13 @@
 PATH
   remote: packages/nepdate-patro
   specs:
-    nepdate-patro (1.0.0.pre.rc.1)
-      nepdate (= 1.0.0.pre.rc.1)
+    nepdate-patro (1.0.0.rc.1)
+      nepdate (= 1.0.0.rc.1)
 
 PATH
   remote: packages/nepdate
   specs:
-    nepdate (1.0.0.pre.rc.1)
+    nepdate (1.0.0.rc.1)
 
 GEM
   remote: https://rubygems.org/

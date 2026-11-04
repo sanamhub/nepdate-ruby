@@ -205,12 +205,11 @@ module NepDate
     def each
       return enum_for(:each) unless block_given?
 
-      cursor = start
-      loop do
-        yield cursor
-        break if cursor == self.end
-
-        cursor = cursor.succ
+      serial = start.serial
+      last = self.end.serial
+      while serial <= last
+        yield Date.from_serial(serial)
+        serial += 1
       end
       self
     end

@@ -14,7 +14,7 @@ body:
     attributes:
       label: Gem and version
       description: The output of `gem list nepdate` and, if relevant, `gem list nepdate-patro`.
-      placeholder: nepdate 1.0.0-rc.1
+      placeholder: nepdate 1.0.0.rc.1
     validations:
       required: true
   - type: input

@@ -8,9 +8,11 @@ module NepDate
     NE = :ne
 
     def self.coerce(value)
+      return value if value == EN || value == NE
+
       case value
-      when :en, "en" then EN
-      when :ne, "ne" then NE
+      when "en" then EN
+      when "ne" then NE
       else
         raise ArgumentError, "language must be :en or :ne, got #{value.inspect}"
       end

@@ -9,13 +9,17 @@ gem "nepdate-patro", path: "packages/nepdate-patro"
 # repository was written.
 gem "benchmark-ips", "2.15.1"
 gem "json", "2.9.1"
-gem "minitest", "5.25.4"
+# minitest 5.26.0 and older declare `required_ruby_version < 4.0`, so the Ruby 4.0
+# matrix cell could not install the bundle. 5.26.1 lifts that cap.
+gem "minitest", "5.26.1"
 gem "parser", "3.3.12.0"
 gem "rake", "13.4.2"
 gem "rbs", "4.2.0"
-gem "rubocop-ast", "1.46.0"
+# rubocop-ast 1.46 asks Prism for the versioned adapter that Ruby 4.0 no longer
+# ships. 1.50.0 supports Ruby 4.0 and still satisfies RuboCop's >= 1.44, < 2.0 range.
+gem "rubocop-ast", "1.50.0"
 gem "simplecov", "1.3.2"
-# standard 1.50 pins RuboCop 1.75, whose analyzer does not need the native prism extension.
-# Newer RuboCop releases require rubocop-ast 1.49 and up, which always builds prism.
+# standard 1.50 pins RuboCop 1.75, so the lint rules are unchanged even though
+# rubocop-ast is newer.
 gem "standard", "1.50.0"
 gem "yard", "0.9.45"

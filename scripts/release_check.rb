@@ -3,6 +3,7 @@
 # Checks the version, the changelog, both gemspecs and the packed gems without publishing anything.
 #
 #   ruby scripts/release_check.rb --print
+#   ruby scripts/release_check.rb --print-family       # the SemVer spelling the hub checks
 #   ruby scripts/release_check.rb --draft              # CI dry run, accepts [Unreleased]
 #   ruby scripts/release_check.rb --draft v1.0.0-rc.1  # a dry run against a tag name
 #   ruby scripts/release_check.rb v1.0.0-rc.1          # a real tag: the version heading must exist
@@ -74,12 +75,18 @@ patro_version = version_from(File.join(ROOT, "packages/nepdate-patro/lib/nepdate
 assert(core_version == patro_version, "the two gems are on different versions: #{core_version} and #{patro_version}")
 
 print_only = ARGV.include?("--print")
+print_family = ARGV.include?("--print-family")
 draft = ARGV.include?("--draft")
 tags = ARGV.reject { |arg| arg.start_with?("--") }
 tag = tags.first
 
 if print_only
   puts core_version
+  exit 0
+end
+
+if print_family
+  puts family_version(core_version)
   exit 0
 end
 

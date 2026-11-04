@@ -56,11 +56,12 @@ jobs:
       - uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
         with:
           ruby-version: "3.4"
-      - name: Read the manifest version
+      # The hub checks the SemVer family spelling (1.0.0-rc.1), not the RubyGems one (1.0.0.rc.1).
+      - name: Read the family version
         id: version
         run: |
           set -euo pipefail
-          if ! version="$(ruby scripts/release_check.rb --print)"; then
+          if ! version="$(ruby scripts/release_check.rb --print-family)"; then
             echo "$version" >&2
             exit 1
           fi

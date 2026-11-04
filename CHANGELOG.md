@@ -8,6 +8,10 @@ repository joins at `1.0.0-rc.1` with the other ports
 
 ## [Unreleased]
 
+## [1.0.0-rc.1] - 2026-11-04
+
+The API is stable from 1.0 (hub ADR-0009). This is the first release of the Ruby port.
+
 ### Added
 
 - The `nepdate` gem: Bikram Sambat dates from 1901-01-01 to 2199-12-30 with conversion to and from

@@ -18,9 +18,9 @@ Part of the NepDate family: the shared data and specification live in the hub
 [`sanamhub/nepdate`](https://github.com/sanamhub/nepdate); the C# original is
 [NepDate](https://github.com/RajuPrasai/NepDate) by Raju Prasai.
 
-> **Status:** 1.0.0-rc.1 is the first release of the Ruby port and is not on RubyGems yet. The API
-> is listed in [docs/API.md](https://github.com/sanamhub/nepdate-ruby/blob/main/docs/API.md) and may
-> still change before 1.0.0. Patro data (tithi, holidays, events) is informational, not an official
+> **Status:** 1.0.0-rc.1, the release candidate for Ruby on RubyGems. The API is listed in
+> [docs/API.md](https://github.com/sanamhub/nepdate-ruby/blob/main/docs/API.md) and is stable from
+> 1.0 (hub ADR-0009). Patro data (tithi, holidays, events) is informational, not an official
 > calendar.
 
 Two gems, released together with the same version and one tag:

@@ -13,7 +13,7 @@ gem "minitest", "5.25.4"
 gem "parser", "3.3.12.0"
 gem "rake", "13.4.2"
 gem "rbs", "4.2.0"
-gem "rubocop-ast", "1.46.0"
+gem "rubocop-ast", "1.50.0"
 gem "simplecov", "1.3.2"
 # standard 1.50 pins RuboCop 1.75, whose analyzer does not need the native prism extension.
 # Newer RuboCop releases require rubocop-ast 1.49 and up, which always builds prism.

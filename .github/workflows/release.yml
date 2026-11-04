@@ -91,6 +91,7 @@ jobs:
     env:
       VERSION: ${{ needs.preflight.outputs.version }}
       FAMILY: ${{ needs.preflight.outputs.family }}
+      RUBYGEMS_OWNER_ID: ${{ vars.RUBYGEMS_OWNER_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -103,12 +104,14 @@ jobs:
       # them. The job installs everything it calls before this step.
       - name: Build and check both gems
         run: bundle exec ruby scripts/release_check.rb "$VERSION"
+      # The action has no owner input yet, and a pending trusted publisher needs the account that
+      # will own the new gem. The script exchanges the same OIDC token with that account included.
       - name: Credentials for nepdate
-        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+        run: bash scripts/rubygems_credentials.sh
       - name: Publish nepdate
         run: gem push "dist/nepdate-$VERSION.gem"
       - name: Credentials for nepdate-patro
-        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+        run: bash scripts/rubygems_credentials.sh
       - name: Publish nepdate-patro
         run: gem push "dist/nepdate-patro-$VERSION.gem"
       - name: GitHub Release from the changelog section

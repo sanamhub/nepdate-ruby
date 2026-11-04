@@ -18,16 +18,24 @@ Do these in order. Do not create the tag until all of them are done.
    - environment: `production`
 3. **Pending trusted publisher for `nepdate-patro`.** Repeat with gem name `nepdate-patro`, the same
    repository, workflow file and environment. The two entries must match exactly.
-4. **`production` environment.** In the GitHub repository, create an environment named `production`
+4. **The owning account id.** The first push creates both gems, and RubyGems.org needs to know which
+   account owns them. Copy the numeric id shown on the Pending Trusted Publishers page into the
+   repository variable:
+   ```sh
+   gh variable set RUBYGEMS_OWNER_ID -R sanamhub/nepdate-ruby --body <account id>
+   ```
+   The release workflow sends it as the `owner` in the OIDC token exchange. Without it, the first
+   push is refused.
+5. **`production` environment.** In the GitHub repository, create an environment named `production`
    under Settings, Environments. Add a deployment tag rule that allows `v*` and nothing else. Add
    required reviewers if the owner wants an approval before each publish. No secret is needed: the
    workflow uses OIDC.
-5. **Dependabot alerts and automated security fixes.** In Settings, Code security, enable Dependabot
+6. **Dependabot alerts and automated security fixes.** In Settings, Code security, enable Dependabot
    alerts and Dependabot security updates. The scheduled dependency review and Scorecard workflows
    need the repository's default branch and code scanning to be enabled.
-6. **Branch protection for `main`.** Require the CI, shared-check, CodeQL and dependency-review
+7. **Branch protection for `main`.** Require the CI, shared-check, CodeQL and dependency-review
    checks, require a pull request, and disallow force pushes and deletion.
-7. **Confirm the names.** `nepdate` and `nepdate-patro` were free on rubygems.org when this port was
+8. **Confirm the names.** `nepdate` and `nepdate-patro` were free on rubygems.org when this port was
    written (2026-11-03). Recheck both gem pages before trusting the pending publishers to reserve
    them; a pending publisher does not take a name until the first successful push.
 

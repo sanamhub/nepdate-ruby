@@ -67,7 +67,7 @@ jobs:
           echo "Resolved version: \`$version\`" >> "$GITHUB_STEP_SUMMARY"
 
   weekly:
-    name: weekly ${{ needs.resolve.outputs.version }} (${{ matrix.os }}, Ruby ${{ matrix.ruby }})
+    name: ${{ github.event_name == 'schedule' && 'weekly' || 'verify' }} ${{ needs.resolve.outputs.version }} (${{ matrix.os }}, Ruby ${{ matrix.ruby }})
     needs: resolve
     strategy:
       fail-fast: false

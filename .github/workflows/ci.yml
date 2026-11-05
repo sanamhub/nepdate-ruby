@@ -32,6 +32,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.ruby == 'head' }}
     timeout-minutes: 40
+    env:
+      # Without this, Bundler on head restarts itself as the locked version and fails again.
+      # "lockfile" is Bundler's default, so 3.4 and 4.0 run exactly as before.
+      BUNDLE_VERSION: ${{ matrix.ruby == 'head' && 'system' || 'lockfile' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

@@ -12,7 +12,7 @@ gem "json", "3.1.0"
 # minitest 5.26.0 and older declare `required_ruby_version < 4.0`, so the Ruby 4.0
 # matrix cell could not install the bundle. 5.26.1 lifts that cap.
 gem "minitest", "6.0.6"
-gem "parser", "3.3.12.0"
+gem "parser", "3.3.13.0"
 gem "rake", "13.4.2"
 gem "rbs", "4.2.0"
 # rubocop-ast 1.46 asks Prism for the versioned adapter that Ruby 4.0 no longer

@@ -1,0 +1,9 @@
+B1 BS to AD                                462.7 ns/op  sd      4.9
+B2 AD to BS                                430.4 ns/op  sd      3.1
+B3 add 1000 days                           458.2 ns/op  sd      2.9
+B4 add 13 months, Clamp                    438.1 ns/op  sd      2.6
+B5 long format, Nepali, weekday            475.8 ns/op  sd      5.1
+B6 strict parse YYYY/MM/DD                1211.3 ns/op  sd      6.9
+B7 patro info                              108.1 ns/op  sd      0.7
+B8 patro month grid                      16324.6 ns/op  sd    127.2
+wrote bench/results/2026-11-16-windows.json

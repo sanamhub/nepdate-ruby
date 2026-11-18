@@ -1,6 +1,6 @@
 # API
 
-The public API of `nepdate` 1.0.0-rc.1 and `nepdate-patro` 1.0.0-rc.1. The inventory is the hub's
+The public API of `nepdate` 1.0.0 and `nepdate-patro` 1.0.0. The inventory is the hub's
 [`spec/API.md`](https://github.com/sanamhub/nepdate/blob/main/spec/API.md), where the C# column is
 the reference. Every row is listed here with its Ruby spelling; the first column is the C# member,
 not a row number.

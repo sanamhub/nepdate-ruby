@@ -36,19 +36,16 @@ the other ports, checked against the shared vectors.
 ## Install
 
 ```sh
-gem install nepdate -v 1.0.0.rc.1
-gem install nepdate-patro -v 1.0.0.rc.1
+gem install nepdate
+gem install nepdate-patro
 ```
 
 In a Gemfile:
 
 ```text
-gem "nepdate", "1.0.0.rc.1"
-gem "nepdate-patro", "1.0.0.rc.1" # tithi, holidays and events
+gem "nepdate", "~> 1.0"
+gem "nepdate-patro", "~> 1.0" # tithi, holidays and events
 ```
-
-RubyGems spells this release candidate `1.0.0.rc.1`; the tag and the changelog keep the family
-spelling `v1.0.0-rc.1`.
 
 ```ruby
 require "nepdate"

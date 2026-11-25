@@ -286,7 +286,7 @@ and are listed in [docs/API.md](https://github.com/sanamhub/nepdate-ruby/blob/ma
 | Page | What it covers |
 |---|---|
 | [API](https://github.com/sanamhub/nepdate-ruby/blob/main/docs/API.md) | Every public type and member, with an example |
-| [Benchmarks](https://github.com/sanamhub/nepdate-ruby/blob/main/docs/benchmarks.md) | B1 to B8 against the C# baseline and the Ruby field |
+| [Benchmarks](https://github.com/sanamhub/nepdate-ruby/blob/main/docs/benchmarks.md) | B1 to B8 against the Python port and the Ruby field; the C# comparison is on the [hub performance page](https://nepdate.com/docs/project/performance/) |
 | [Competitors](https://github.com/sanamhub/nepdate-ruby/blob/main/docs/competitors.md) | The RubyGems candidates considered for the benchmark |
 | [ADRs](https://github.com/sanamhub/nepdate-ruby/blob/main/docs/adr/README.md) | Why the design is what it is |
 | [Release](https://github.com/sanamhub/nepdate-ruby/blob/main/docs/runbooks/release.md) | Tagging, publishing and the post-publish check |
@@ -299,8 +299,8 @@ and are listed in [docs/API.md](https://github.com/sanamhub/nepdate-ruby/blob/ma
 
 ## Benchmarks
 
-`bench/` measures B1 to B8 of the shared benchmark specification against the C# NepDate baseline
-and the Python port, the closest same-kind runtime. No RubyGems library passes the maturity and
+`bench/` measures B1 to B8 of the shared benchmark specification against the Python port,
+the closest same-kind runtime. The C# comparison is on the [hub performance page](https://nepdate.com/docs/project/performance/). No RubyGems library passes the maturity and
 usage bar, so there is no Ruby competitor column; the
 evidence is in [docs/competitors.md](https://github.com/sanamhub/nepdate-ruby/blob/main/docs/competitors.md).
 The machine, the method and the current numbers, including the Python reference and the YJIT row,

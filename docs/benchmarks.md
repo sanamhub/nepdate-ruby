@@ -6,9 +6,8 @@ seconds before each session and every second during it, and the machine was othe
 
 The closest same-kind reference is the Python port. Both are interpreted, dynamically typed
 runtimes with the same table-driven design, so Python is measured in the same session and every
-Ruby row is compared with it. C# NepDate remains the family baseline. The Python figures are the
-Python port's own idle run of the same day for Windows, and a Python run in WSL straight after the
-Ruby runs for Linux.
+Ruby row is compared with it. The Python figures are the Python port's own idle run of the same day
+for Windows, and a Python run in WSL straight after the Ruby runs for Linux.
 
 ## Machine and versions
 
@@ -25,7 +24,6 @@ Ruby runs for Linux.
 | Python, Linux | 3.12.16 (Clang 23.1.3), pyperf 2.10.0 |
 | Harness | `bench/bench.rb`, monotonic clock, 10 samples per operation, one pass over the 64 inputs per iteration |
 | Date of run | 2026-11-16 |
-| C# baseline | NepDate 2.0.7, .NET 10.0.15, from the hub's `docs/benchmarks/dotnet.md` |
 
 The Windows Ruby session had an idle gate of **5.1%** average (peak 14.5%) over 30 one-second samples,
 and **9.7%** average (peak 14.5%) during the run, over 23 samples. The Linux Ruby session had a gate
@@ -68,18 +66,19 @@ Time is nanoseconds per single operation, lower is better. `Ruby before` is comm
 the same harness, so only the library code differs; it and `Ruby 2026-11-04` are the earlier runs,
 kept for the direction of the change. Bytes per operation are not measured: Ruby has
 no reliable per-operation byte allocator, which BENCHMARK.md allows to be reported as not measured.
-The C# column is the same operation on the same 64 inputs, measured on the same machine.
 
-| ID | Operation | Python ns/op | Ruby before ns/op | Ruby 2026-11-04 ns/op | Ruby now ns/op | Ruby now / Python | C# .NET 10 ns/op |
-|---|---|---:|---:|---:|---:|---:|---:|
-| B1 | BS to AD | 612.8 | 498.8 | 575.2 | 462.7 | 0.76x | 13.27 |
-| B2 | AD to BS | 518.9 | 2,380.9 | 531.8 | 430.4 | 0.83x | 18.70 |
-| B3 | add 1000 days | 474.3 | 2,365.8 | 630.0 | 458.2 | 0.97x | 20.06 |
-| B4 | add 13 months, Clamp | 431.3 | 1,612.4 | 478.1 | 438.1 | 1.02x | 19.30 |
-| B5 | long format, Nepali, weekday | 433.4 | 3,337.8 | 506.1 | 475.8 | 1.10x | 139.04 |
-| B6 | strict parse `YYYY/MM/DD` | 1,157.1 | 3,446.3 | 1,430.8 | 1,211.3 | 1.05x | 21.13 |
-| B7 | patro info | 118.9 | 2,798.4 | 123.0 | 108.1 | 0.91x | 48.63 |
-| B8 | patro month grid | 15,840.1 | 144,478.6 | 17,828.8 | 16,324.6 | 1.03x | 3,274.50 |
+The comparison with C# NepDate, the original library, and the target check from `spec/BENCHMARK.md` section 6 are in the hub: [performance page](https://nepdate.com/docs/project/performance/).
+
+| ID | Operation | Python ns/op | Ruby before ns/op | Ruby 2026-11-04 ns/op | Ruby now ns/op | Ruby now / Python |
+|---|---|---:|---:|---:|---:|---:|
+| B1 | BS to AD | 612.8 | 498.8 | 575.2 | 462.7 | 0.76x |
+| B2 | AD to BS | 518.9 | 2,380.9 | 531.8 | 430.4 | 0.83x |
+| B3 | add 1000 days | 474.3 | 2,365.8 | 630.0 | 458.2 | 0.97x |
+| B4 | add 13 months, Clamp | 431.3 | 1,612.4 | 478.1 | 438.1 | 1.02x |
+| B5 | long format, Nepali, weekday | 433.4 | 3,337.8 | 506.1 | 475.8 | 1.10x |
+| B6 | strict parse `YYYY/MM/DD` | 1,157.1 | 3,446.3 | 1,430.8 | 1,211.3 | 1.05x |
+| B7 | patro info | 118.9 | 2,798.4 | 123.0 | 108.1 | 0.91x |
+| B8 | patro month grid | 15,840.1 | 144,478.6 | 17,828.8 | 16,324.6 | 1.03x |
 
 Raw files:
 [2026-11-16-windows.json](https://github.com/sanamhub/nepdate-ruby/blob/main/bench/results/2026-11-16-windows.json),
@@ -142,8 +141,7 @@ changes are:
 
 The Ruby port is a pure-Ruby value library with no C extension. Every conversion still allocates a
 frozen `NepDate::Date`; formatting still allocates the result string; B7 and B8 still walk every
-day of every month grid. C# does the same work with a struct and a JIT, so the gap remains in the C#
-favour on every row; the Ruby numbers are not a claim that Ruby matches a compiled runtime.
+day of every month grid. The Ruby numbers are not a claim that Ruby matches a compiled runtime.
 
 There is no Ruby competitor column: no RubyGems library passes the section 7 usage floor, and the
 five candidates are in [docs/competitors.md](competitors.md). Python is a same-kind reference, not
